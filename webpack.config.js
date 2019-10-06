@@ -1,7 +1,7 @@
 const myPlugin = require("./bin");
 module.exports = {
   entry: "./index.js",
-  mode: "development",
+  mode: "production",
   output: {
     filename: "bundle.js"
   },
@@ -14,7 +14,8 @@ module.exports = {
           {
             loader: "url-loader",
             options: {
-              limit: 8192
+              limit: 8192,
+              // name: 'images/[name]_[hash:7].[ext]'
             }
           }
         ]
@@ -34,11 +35,11 @@ module.exports = {
   },
   plugins: [
     new myPlugin({
-      host: "https://www.baidu.com",
+      host: "http://cdn.toofook.com",
       dirname: "myBolot",
       ak: "imM5KIryDmH88QQ0ePHd5OQNX8aSqlUBKHDXRlvL",
       sk: "NF-wmljgIP8dlgNOaWJ3x1Tg40uNev6IDeVLhR8p",
-      bk: "brucecdn"
+      bk: "brucecdn",
     })
   ]
 };
