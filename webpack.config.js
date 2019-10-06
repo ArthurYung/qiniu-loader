@@ -36,7 +36,7 @@ module.exports = {
   plugins: [
     new myPlugin({
       host: "http://cdn.toofook.com",
-      dirname: "myBolot",
+      dirname: "Testshow/tdd",
       ak: "imM5KIryDmH88QQ0ePHd5OQNX8aSqlUBKHDXRlvL",
       sk: "NF-wmljgIP8dlgNOaWJ3x1Tg40uNev6IDeVLhR8p",
       bk: "brucecdn",

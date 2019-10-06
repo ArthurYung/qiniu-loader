@@ -45,12 +45,12 @@ class QiNiu {
     const { queryList, error } = await this.queryOriginFileList()
       .then(queryList => ({ queryList }))
       .catch(error => ({ error }));
-    // console.log(queryList)
+
     if (error) {
       logger.error(error)
       return;
     }
-    console.log(queryList.items)
+
     const UploadAssetsMap = this._getUploadAssetMap(LocalAssetsMap);
     const [uploadItems, deleteItems] = this.checkOriginItem(
       queryList.items,
