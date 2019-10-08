@@ -61,7 +61,7 @@ class QiNiu {
     await this.batchUpload(uploadItems);
     await this.clearLocalAssets()
 
-    logger.success('Plugin End >')
+    logger.success('--- End ---')
   }
   // 批量上传远端文件
   batchUpload(uploadItems) {
@@ -208,6 +208,7 @@ class QiNiu {
 
 /**@typedef {{outputFile?: String, uploadKey?: String, hash?: String, mimeType?: String, request?: String}} LocalAsset*/
 /**
+ * 添加本地资源到LocalAssetsMap对象中
  * @param {String} uploadKey
  * @param {LocalAsset} asset
  */
@@ -217,10 +218,11 @@ module.exports.setLocalAsset = function(userRequest, asset = {}) {
     : asset;
 };
 
+// 遍历LocalAssetsMap对象的键值，通过回调函数生成一个新的LocalAssetsMap，类似Array.map
 module.exports.modifyEachAsset = function(callback) {
   const newLocalAssetsMap = {}
   Object.keys(LocalAssetsMap).forEach(key => {
-    newLocalAssetsMap[key] = callback(LocalAssetsMap[key])
+    newLocalAssetsMap[key] = callback(LocalAssetsMap[key], key)
   })
   LocalAssetsMap = newLocalAssetsMap
 }
