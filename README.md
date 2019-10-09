@@ -26,8 +26,12 @@
 
 ## 配置
 
+```base
+yarn add qiniu-upload-webpack-plugin -D
+```
+
 ```js
-import QiNiuUploadPlug = require('qiniu-upload-plugin')
+import QiNiuUploadPlug = require('qiniu-upload-webpack-plugin')
 
 module.exports = {
     ...,
