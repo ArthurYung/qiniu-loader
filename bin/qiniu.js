@@ -1,6 +1,6 @@
 const qiniu = require("qiniu");
 const logger = require("./log");
-const fs = require("fs")
+const fs = require("fs");
 // 本地资源信息映射
 var LocalAssetsMap = {};
 
@@ -11,6 +11,7 @@ class QiNiu {
     this.bucket = options.bk;
     this.dirname = options.dirname;
     this.maxFile = options.maxFile;
+    this.zone = options.zone;
     this._init();
   }
   _init() {
@@ -28,6 +29,9 @@ class QiNiu {
     }
 
     this.config = new qiniu.conf.Config();
+    if (this.zone) {
+      this.config.zone = qiniu.zone[this.zone];
+    }
     this.mac = new qiniu.auth.digest.Mac(this.accessKey, this.secretKey);
     this.bucketManager = new qiniu.rs.BucketManager(this.mac, this.config);
     this.formUploader = new qiniu.form_up.FormUploader(this.config);
@@ -36,10 +40,10 @@ class QiNiu {
   async uploadStart() {
     if (this._Error) {
       // 如果构建上传任务报错，则终止
-      logger.error(this._Error)
+      logger.error(this._Error);
       return;
     }
-    logger.info('Start qiniu upload >>>')
+    logger.info("Start qiniu upload >>>");
 
     // 拉取远端目录
     const { queryList, error } = await this.queryOriginFileList()
@@ -47,7 +51,7 @@ class QiNiu {
       .catch(error => ({ error }));
 
     if (error) {
-      logger.error(error)
+      logger.error(error);
       return;
     }
 
@@ -56,36 +60,36 @@ class QiNiu {
       queryList.items,
       UploadAssetsMap
     );
-  
+
     await this.batchDelete(deleteItems);
     await this.batchUpload(uploadItems);
-    await this.clearLocalAssets()
+    await this.clearLocalAssets();
 
-    logger.success('--- End ---')
+    logger.success("--- End ---");
   }
   // 批量上传远端文件
   batchUpload(uploadItems) {
-    if (!uploadItems.length) return
+    if (!uploadItems.length) return;
 
     const uploadPromiseQueue = uploadItems.map(asset =>
       this._uploadFile(asset)
     );
-    
+
     return Promise.all(uploadPromiseQueue)
       .then(res => {
-        const resLogger = res.map(url => `\n + ${url}`).join('')
-        logger.success(`Upload succeeded ${resLogger}`)
+        const resLogger = res.map(url => `\n + ${url}`).join("");
+        logger.success(`Upload succeeded ${resLogger}`);
       })
       .catch(error => {
-        logger.error(error)
+        logger.error(error);
       });
   }
   // 批量删除远端文件
   batchDelete(deleteItems) {
     return new Promise((resolve, reject) => {
       if (!deleteItems.length) {
-        resolve()
-        return
+        resolve();
+        return;
       }
 
       const bucket = this.bucket;
@@ -94,19 +98,20 @@ class QiNiu {
       );
       this.bucketManager.batch(deleteOptions, function(err) {
         if (err) {
-          logger.error(err)
-          reject(err)
+          logger.error(err);
+          reject(err);
         } else if (deleteItems.length) {
-          const deleteLogger = deleteItems.map(item => `\n - ${item.key}`).join('');
-          logger.warn(`Remote deleted ${deleteLogger}`)
-          resolve()
+          const deleteLogger = deleteItems
+            .map(item => `\n - ${item.key}`)
+            .join("");
+          logger.warn(`Remote deleted ${deleteLogger}`);
+          resolve();
         }
       });
-    })
+    });
   }
   // 上传文件
   _uploadFile(asset) {
-
     return new Promise((resolve, reject) => {
       const putPolicy = new qiniu.rs.PutPolicy({
         scope: this.bucket + ":" + asset.uploadKey
@@ -141,7 +146,6 @@ class QiNiu {
   }
   // 将本地资源列表与远端资源列表做对比,筛选出需要上传的本地资源与需要删除的远端资源,不重复上传
   checkOriginItem(items = [], LocalAssetsMap) {
-
     const needDeleteItems = []; // 需要删除的远端资源列表
     const needUploadAssets = []; // 需要上传的本地资源列表
     const uploadKeyAssetMap = {}; // 一个以uploadKey为键值的Object，便于后续操作
@@ -150,7 +154,7 @@ class QiNiu {
       // 将localAssetsMap以uploadKey为键值映射到uploadKeyAssetMap
       uploadKeyAssetMap[LocalAssetsMap[key].uploadKey] = LocalAssetsMap[key];
     });
-    
+
     // 先遍历远端资源，筛选出需要删除的无用远端文件
     items.forEach(item => {
       const { key } = item;
@@ -161,7 +165,7 @@ class QiNiu {
 
     // 遍历本地资源，如果远端不存在则上传
     Object.keys(uploadKeyAssetMap).forEach(key => {
-      if (items.find(item => item.key === key )) return;
+      if (items.find(item => item.key === key)) return;
       needUploadAssets.push(uploadKeyAssetMap[key]);
     });
 
@@ -191,18 +195,18 @@ class QiNiu {
   }
   // 清除上传七牛云的本地无用资源
   clearLocalAssets() {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       try {
-        const uploadAssets = this._getUploadAssetMap(LocalAssetsMap)
+        const uploadAssets = this._getUploadAssetMap(LocalAssetsMap);
         Object.keys(uploadAssets).forEach(key => {
-          fs.unlinkSync(uploadAssets[key].outputFile)
-          logger.info(`Cleared asset: ${uploadAssets[key].outputFile}`)
-        })
+          fs.unlinkSync(uploadAssets[key].outputFile);
+          logger.info(`Cleared asset: ${uploadAssets[key].outputFile}`);
+        });
       } catch (e) {
-        logger.error(e)
+        logger.error(e);
       }
-      resolve()
-    })
+      resolve();
+    });
   }
 }
 
@@ -220,11 +224,11 @@ module.exports.setLocalAsset = function(userRequest, asset = {}) {
 
 // 遍历LocalAssetsMap对象的键值，通过回调函数生成一个新的LocalAssetsMap，类似Array.map
 module.exports.modifyEachAsset = function(callback) {
-  const newLocalAssetsMap = {}
+  const newLocalAssetsMap = {};
   Object.keys(LocalAssetsMap).forEach(key => {
-    newLocalAssetsMap[key] = callback(LocalAssetsMap[key], key)
-  })
-  LocalAssetsMap = newLocalAssetsMap
-}
+    newLocalAssetsMap[key] = callback(LocalAssetsMap[key], key);
+  });
+  LocalAssetsMap = newLocalAssetsMap;
+};
 
 module.exports.createQiNiu = QiNiu;

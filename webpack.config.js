@@ -1,5 +1,5 @@
 const myPlugin = require("./bin");
-const path = require("path")
+const path = require("path");
 module.exports = {
   entry: "./index.js",
   mode: "production",
@@ -8,10 +8,10 @@ module.exports = {
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src/'),
-      Utilities: path.resolve(__dirname, 'src/utilities/'),
-      Templates: path.resolve(__dirname, 'src/templates/')
-    },
+      "@": path.resolve(__dirname, "src/"),
+      Utilities: path.resolve(__dirname, "src/utilities/"),
+      Templates: path.resolve(__dirname, "src/templates/")
+    }
   },
   module: {
     rules: [
@@ -22,7 +22,7 @@ module.exports = {
           {
             loader: "url-loader",
             options: {
-              limit: 8192,
+              limit: 8192
               // name: 'images/[name]_[hash:7].[ext]'
             }
           }
@@ -41,13 +41,5 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new myPlugin({
-      host: "http://cdn.toofook.com",
-      dirname: "Testshow/tdd",
-      ak: "imM5KIryDmH88QQ0ePHd5OQNX8aSqlUBKHDXRlvL",
-      sk: "NF-wmljgIP8dlgNOaWJ3x1Tg40uNev6IDeVLhR8p",
-      bk: "brucecdn",
-    })
-  ]
+  plugins: [new myPlugin({})]
 };

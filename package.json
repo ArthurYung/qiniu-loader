@@ -1,8 +1,8 @@
 {
-  "name": "qiniu-loader",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "qiniu-upload-webpack-plugin",
+  "version": "1.4.0",
+  "description": "webpack 七牛云上传插件",
+  "main": "./bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,7 +12,8 @@
   },
   "keywords": [
     "webpack",
-    "loader"
+    "loader",
+    "qiniu"
   ],
   "author": "Bruce.Au",
   "license": "MIT",
