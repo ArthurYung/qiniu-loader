@@ -13,7 +13,7 @@
 
 ## 特点
 为每个项目定义一个命名空间，以命名空间为模块来控制云端文件，可以实现上传前置检查，优化上传。
-在`normalModuleLoader`阶段为符合条件的资源添加一个解析loader，在loader上更改文件的src，避免配置`publicPath`。   
+在`normalModuleLoader`阶段为符合条件的资源添加一个解析loader，通过loader更改文件的src，避免配置`publicPath`。   
 
 - 每个项目在七牛云上会配置一个命名空间，如`/qiniu/your-asset.jpg`
 - 无需配置`publicPath`
