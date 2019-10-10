@@ -55,3 +55,5 @@ module.exports = {
 }
 
 ```
+
+## 1.4.3 支持 Nuxt 打包
