@@ -1,6 +1,6 @@
 {
   "name": "qiniu-upload-webpack-plugin",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "webpack 七牛云上传插件",
   "main": "./bin/index.js",
   "scripts": {
