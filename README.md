@@ -31,7 +31,7 @@ yarn add qiniu-upload-webpack-plugin -D
 ```
 
 ```js
-import QiNiuUploadPlug = require('qiniu-upload-webpack-plugin')
+const QiNiuUploadPlug = require('qiniu-upload-webpack-plugin')
 
 module.exports = {
     ...,
