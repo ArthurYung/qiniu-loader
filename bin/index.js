@@ -31,7 +31,8 @@ class QiNiuAutoUploadPlugin {
     this.applyCompilerCallback = this.applyCompilerCallback.bind(this);
     this.comilationTapCallback = this.comilationTapCallback.bind(this);
     this.getModulesOutputPath = this.getModulesOutputPath.bind(this);
-    this.startUploadAsstes = this.startUploadAsstes.bind(this);
+    this.startUploadAssets = this.startUploadAssets.bind(this);
+    this.setUploadFilterOption = this.setUploadFilterOption.bind(this);
 
     this.qiniu = new Qiniu.createQiNiu(this.uploadOption);
   }
@@ -39,14 +40,14 @@ class QiNiuAutoUploadPlugin {
   apply(compiler) {
     const context = compiler.context;
     const mode = compiler.options.mode;
-    const execution = this.uploadOption.uploadOption;
+    const execution = this.uploadOption.execution;
+    this.setUploadFilterOption(context);
     // 如果用户设置了不执行插件，则不挂载钩子事件
     if (execution !== undefined && !execution) return;
     // 默认情况下development环境不执行上传插件
     if (mode && mode === "development" && !execution) return;
 
     // 保存上传资源筛选条件
-    this.setUploadFilterOption(context);
 
     // 指定要附加到的事件钩子函数
     if (compiler.hooks) {
@@ -54,10 +55,10 @@ class QiNiuAutoUploadPlugin {
         "QiniuAutoPlugin",
         this.applyCompilerCallback
       );
-      compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadAsstes);
+      compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadAssets);
     } else {
       compiler.plugin("this-compilation", this.applyCompilerCallback);
-      compiler.plugin("done", this.startUploadAsstes);
+      compiler.plugin("done", this.startUploadAssets);
     }
   }
   setUploadFilterOption(context) {
@@ -89,6 +90,7 @@ class QiNiuAutoUploadPlugin {
     if (excludesPath && moduleContext.userRequest.indexOf(excludesPath) === 0) {
       return;
     }
+
     if (!mimeTypeReg.test(moduleContext.userRequest)) {
       return;
     }
@@ -101,12 +103,14 @@ class QiNiuAutoUploadPlugin {
       outputFile: fileName
     });
   }
-  startUploadAsstes(compilation) {
+  startUploadAssets(compilation) {
     const outputPath = compilation.compilation.outputOptions.path;
     Qiniu.modifyEachAsset(asset => {
+      const outputFiles = asset.outputFiles || [];
+      outputFiles.push(path.resolve(outputPath, asset.outputFile));
       return {
         ...asset,
-        outputFile: path.resolve(outputPath, asset.outputFile)
+        outputFiles
       };
     });
 

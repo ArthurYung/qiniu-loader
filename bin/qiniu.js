@@ -72,6 +72,7 @@ class QiNiu {
   batchUpload(uploadItems, increment) {
     if (!uploadItems.length) return;
     if (increment) return; // 增量上传不删除旧文件
+    logger.info("uploading...");
     const uploadPromiseQueue = uploadItems.map(asset =>
       this._uploadFile(asset)
     );
@@ -119,11 +120,18 @@ class QiNiu {
       });
       const putExtra = new qiniu.form_up.PutExtra();
       const uploadToken = putPolicy.uploadToken(this.mac);
+      let uploadFilePath = "";
+      asset.outputFiles.forEach(outputPath => {
+        // 判断一下路径是否存在
+        if (fs.existsSync(outputPath)) {
+          uploadFilePath = outputPath;
+        }
+      });
 
       this.formUploader.putFile(
         uploadToken,
         asset.uploadKey,
-        asset.outputFile,
+        uploadFilePath,
         putExtra,
         function(err, body) {
           if (err) {
@@ -200,11 +208,16 @@ class QiNiu {
       try {
         const uploadAssets = this._getUploadAssetMap(LocalAssetsMap);
         Object.keys(uploadAssets).forEach(key => {
-          fs.unlinkSync(uploadAssets[key].outputFile);
-          logger.info(`Cleared asset: ${uploadAssets[key].outputFile}`);
+          uploadAssets[key].outputFiles.forEach(filePath => {
+            // 判断一下路径是否存在
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+              logger.info(`Cleared asset: ${filePath}`);
+            }
+          });
         });
       } catch (e) {
-        logger.error(e);
+        logger.error("Clear Error: " + e.message);
       }
       resolve();
     });
