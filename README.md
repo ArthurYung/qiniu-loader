@@ -48,6 +48,7 @@ module.exports = {
             includes: "/", // 包含的目录
             excludes: null, // 排除的目录
             maxFile: 100, // 单次最大上传数量
+            increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirName下旧的无用文件
             execution: undefined // 是否开启插件，默认情况下只有production环境执行插件上传任务
         })
     ]

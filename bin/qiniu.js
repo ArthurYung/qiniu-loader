@@ -12,6 +12,7 @@ class QiNiu {
     this.dirname = options.dirname;
     this.maxFile = options.maxFile;
     this.zone = options.zone;
+    this.increment = options.increment;
     this._init();
   }
   _init() {
@@ -61,16 +62,16 @@ class QiNiu {
       UploadAssetsMap
     );
 
-    await this.batchDelete(deleteItems);
+    await this.batchDelete(deleteItems, this.increment);
     await this.batchUpload(uploadItems);
     await this.clearLocalAssets();
 
     logger.success("--- End ---");
   }
   // 批量上传远端文件
-  batchUpload(uploadItems) {
+  batchUpload(uploadItems, increment) {
     if (!uploadItems.length) return;
-
+    if (increment) return; // 增量上传不删除旧文件
     const uploadPromiseQueue = uploadItems.map(asset =>
       this._uploadFile(asset)
     );
