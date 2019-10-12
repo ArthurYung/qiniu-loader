@@ -5,7 +5,7 @@ const loaderPath = path.resolve(__dirname, "loader.js");
 // 默认配置
 const defaultOptions = {
   host: "", // cdn域名
-  dirName: "my-qiniu", // 项目前缀
+  dirname: "my-qiniu", // 项目前缀
   bk: "", // 七牛云bucket
   ak: "", // 七牛云登陆 ak
   sk: "", // 七牛云登陆 sk
@@ -14,8 +14,9 @@ const defaultOptions = {
   zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
   includes: "/", // 包含的文件目录
   maxFile: 100, // 单次最大上传数量
-  increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirName下旧的无用文件
-  execution: undefined // 是否开启插件，默认情况下只有production环境执行插件上传任务
+  increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirname下旧的无用文件
+  execution: undefined, // 是否开启插件，默认情况下只有production环境执行插件上传任务
+  mode: "pic"
 };
 
 const unshiftLoader = (moduleContext, options = {}) => {
@@ -33,6 +34,7 @@ class QiNiuAutoUploadPlugin {
     this.getModulesOutputPath = this.getModulesOutputPath.bind(this);
     this.startUploadAssets = this.startUploadAssets.bind(this);
     this.setUploadFilterOption = this.setUploadFilterOption.bind(this);
+    this.startUploadByPublic = this.startUploadByPublic.bind(this);
 
     this.qiniu = new Qiniu.createQiNiu(this.uploadOption);
   }
@@ -41,24 +43,26 @@ class QiNiuAutoUploadPlugin {
     const context = compiler.context;
     const mode = compiler.options.mode;
     const execution = this.uploadOption.execution;
+    // 保存上传资源筛选条件
     this.setUploadFilterOption(context);
     // 如果用户设置了不执行插件，则不挂载钩子事件
     if (execution !== undefined && !execution) return;
     // 默认情况下development环境不执行上传插件
     if (mode && mode === "development" && !execution) return;
 
-    // 保存上传资源筛选条件
-
-    // 指定要附加到的事件钩子函数
-    if (compiler.hooks) {
+    if (this.uploadOption.mode === "public") {
+      compiler.hooks.compilation.tap("QiniuAutoPlugin", compilation => {
+        compilation.outputOptions.publicPath =
+          this.uploadOption.host + "/" + this.uploadOption.dirname;
+        this.outputPath = compilation.outputOptions.path;
+      });
+      compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadByPublic);
+    } else {
       compiler.hooks.thisCompilation.tap(
         "QiniuAutoPlugin",
         this.applyCompilerCallback
       );
       compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadAssets);
-    } else {
-      compiler.plugin("this-compilation", this.applyCompilerCallback);
-      compiler.plugin("done", this.startUploadAssets);
     }
   }
   setUploadFilterOption(context) {
@@ -70,19 +74,14 @@ class QiNiuAutoUploadPlugin {
     }
   }
   applyCompilerCallback(compilation) {
-    if (compilation.hooks) {
-      compilation.hooks.normalModuleLoader.tap(
-        "QiniuAutoPlugin",
-        this.comilationTapCallback
-      );
-      compilation.hooks.moduleAsset.tap(
-        "QiniuAutoPlugin",
-        this.getModulesOutputPath
-      );
-    } else {
-      compilation.plugin("normal-module-loader", this.comilationTapCallback);
-      compilation.plugin("module-asset", this.getModulesOutputPath);
-    }
+    compilation.hooks.normalModuleLoader.tap(
+      "QiniuAutoPlugin",
+      this.comilationTapCallback
+    );
+    compilation.hooks.moduleAsset.tap(
+      "QiniuAutoPlugin",
+      this.getModulesOutputPath
+    );
   }
   comilationTapCallback(loaderContext, moduleContext) {
     const { includesPath, excludesPath, mimeTypeReg } = this.uploadOption;
@@ -102,6 +101,20 @@ class QiNiuAutoUploadPlugin {
     Qiniu.setLocalAsset(moduleContext.userRequest, {
       outputFile: fileName
     });
+  }
+  startUploadByPublic(compilation) {
+    const dirname = this.uploadOption.dirname;
+    Object.keys(compilation.compilation.assets).forEach(fileName => {
+      const outputFile = path.resolve(this.outputPath, fileName);
+      Qiniu.setLocalAsset(fileName, {
+        outputFile,
+        outputFiles: [outputFile],
+        emit: true,
+        request: outputFile,
+        uploadKey: dirname + "/" + fileName
+      });
+    });
+    this.startUploadAssets(compilation);
   }
   startUploadAssets(compilation) {
     const outputPath = compilation.compilation.outputOptions.path;

@@ -1,6 +1,7 @@
 const qiniu = require("qiniu");
 const logger = require("./log");
 const fs = require("fs");
+const loaderUtils = require("loader-utils");
 // 本地资源信息映射
 var LocalAssetsMap = {};
 
@@ -61,7 +62,6 @@ class QiNiu {
       queryList.items,
       UploadAssetsMap
     );
-
     await this.batchDelete(deleteItems, this.increment);
     await this.batchUpload(uploadItems);
     await this.clearLocalAssets();
@@ -69,9 +69,8 @@ class QiNiu {
     logger.success("--- End ---");
   }
   // 批量上传远端文件
-  batchUpload(uploadItems, increment) {
+  batchUpload(uploadItems) {
     if (!uploadItems.length) return;
-    if (increment) return; // 增量上传不删除旧文件
     logger.info("uploading...");
     const uploadPromiseQueue = uploadItems.map(asset =>
       this._uploadFile(asset)
@@ -87,7 +86,8 @@ class QiNiu {
       });
   }
   // 批量删除远端文件
-  batchDelete(deleteItems) {
+  batchDelete(deleteItems, increment) {
+    if (increment) return Promise.resolve(); // 增量上传不删除旧文件
     return new Promise((resolve, reject) => {
       if (!deleteItems.length) {
         resolve();
@@ -174,7 +174,12 @@ class QiNiu {
 
     // 遍历本地资源，如果远端不存在则上传
     Object.keys(uploadKeyAssetMap).forEach(key => {
-      if (items.find(item => item.key === key)) return;
+      if (!fs.existsSync(uploadKeyAssetMap[key].request)) {
+        return;
+      }
+      const assetSource = fs.readFileSync(uploadKeyAssetMap[key].request);
+      const hash = loaderUtils.getHashDigest(assetSource);
+      if (items.find(item => item.key === key && item.md5 === hash)) return;
       needUploadAssets.push(uploadKeyAssetMap[key]);
     });
 

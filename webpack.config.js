@@ -41,5 +41,10 @@ module.exports = {
       }
     ]
   },
-  plugins: [new myPlugin({})]
+  plugins: [
+    new myPlugin({
+      mode: "public",
+      increment: false
+    })
+  ]
 };
