@@ -16,7 +16,7 @@ const defaultOptions = {
   maxFile: 100, // 单次最大上传数量
   increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirname下旧的无用文件
   execution: undefined, // 是否开启插件，默认情况下只有production环境执行插件上传任务
-  mode: "pic"
+  mode: "pic" // 模式 public为全部上传
 };
 
 const unshiftLoader = (moduleContext, options = {}) => {
@@ -53,9 +53,10 @@ class QiNiuAutoUploadPlugin {
     if (this.uploadOption.mode === "public") {
       compiler.hooks.compilation.tap("QiniuAutoPlugin", compilation => {
         compilation.outputOptions.publicPath =
-          this.uploadOption.host + "/" + this.uploadOption.dirname;
+          this.uploadOption.host + "/" + this.uploadOption.dirname + "/";
         this.outputPath = compilation.outputOptions.path;
       });
+      if (compiler.options.name === "server") return;
       compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadByPublic);
     } else {
       compiler.hooks.thisCompilation.tap(
@@ -104,8 +105,10 @@ class QiNiuAutoUploadPlugin {
   }
   startUploadByPublic(compilation) {
     const dirname = this.uploadOption.dirname;
+    const outputPath = compilation.compilation.outputOptions.path;
     Object.keys(compilation.compilation.assets).forEach(fileName => {
-      const outputFile = path.resolve(this.outputPath, fileName);
+      if (/\.(html|json)$/.test(fileName)) return;
+      const outputFile = path.resolve(outputPath, fileName);
       Qiniu.setLocalAsset(fileName, {
         outputFile,
         outputFiles: [outputFile],
