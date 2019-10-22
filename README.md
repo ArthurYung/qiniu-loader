@@ -11,12 +11,12 @@
 - 打包后在 dist 目录下存在无用资源（已上传到云端）。
 - 通过`publicPath`修改引用前缀，则所有本地资源都必须上传到指定 cdn，包括 css/js 文件。
 
-因此，我决定针对这些痛点自己撸一个上传插件（目前只支持图片文件）
+因此，我决定针对这些痛点自己撸一个上传插件
 
 ## 特点
 
 为每个项目定义一个命名空间，以命名空间为模块来控制云端文件，可以实现上传前置检查，优化上传。
-在`normalModuleLoader`阶段为符合条件的资源添加一个解析 loader，通过 loader 更改文件的 src，避免配置`publicPath`。
+非 publish 模式下会在`normalModuleLoader`阶段为符合条件的资源添加一个解析 loader，通过 loader 更改文件的 src，避免修改`publicPath`，只上传需要上传的文件。
 
 - 每个项目在七牛云上会配置一个命名空间，如`/qiniu/your-asset.jpg`
 - 无需配置`publicPath`
@@ -43,13 +43,14 @@ module.exports = {
             ak: '', // 七牛云登陆 ak 必填
             sk: '', // 七牛云登陆 sk 必填
             limit: 100, // 超过100字节的文件才上传 默认100
-            mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 上传的文件后缀
+            mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 需要上传的文件后缀
             zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
-            includes: "/", // 包含的目录
-            excludes: null, // 排除的目录
+            includes: "/", // 筛选包含的路径
+            excludes: null, // 需要排除的路径
             maxFile: 100, // 单次最大上传数量
             increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirName下旧的无用文件
-            execution: undefined // 是否开启插件，默认情况下只有production环境执行插件上传任务
+            execution: null, // 是否开启插件，默认情况下只有production环境执行插件上传任务
+            mode: "pic" // 模式 public为上传全部资源，会替换掉项目的publicPath
         })
     ]
 }

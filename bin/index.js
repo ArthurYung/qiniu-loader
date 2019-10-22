@@ -15,8 +15,8 @@ const defaultOptions = {
   includes: "/", // 包含的文件目录
   maxFile: 100, // 单次最大上传数量
   increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirname下旧的无用文件
-  execution: undefined, // 是否开启插件，默认情况下只有production环境执行插件上传任务
-  mode: "pic" // 模式 public为全部上传
+  execution: null, // 是否开启插件，默认情况下只有production环境执行插件上传任务
+  mode: "pic" // 模式 public为上传全部资源，会替换掉项目的publicPath
 };
 
 const unshiftLoader = (moduleContext, options = {}) => {
@@ -56,6 +56,7 @@ class QiNiuAutoUploadPlugin {
           this.uploadOption.host + "/" + this.uploadOption.dirname + "/";
         this.outputPath = compilation.outputOptions.path;
       });
+      // 兼容nuxt， 服务端代码不上传七牛
       if (compiler.options.name === "server") return;
       compiler.hooks.done.tap("QiniuAutoPlugin", this.startUploadByPublic);
     } else {
