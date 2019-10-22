@@ -53,10 +53,10 @@ module.exports = {
 | **sk**    | string   | [七牛 secretKey](https://developer.qiniu.com/kodo/manual/3978/the-basic-concept)                            | -                                         |
 | **bk**    | string   | [对象存储 bucket](https://developer.qiniu.com/kodo/manual/1728/buckets)                                     | -                                         |
 | **host**  | string   | 用于访问 DNS 资源的[域名](https://developer.qiniu.com/kodo/kb/5859/domain-name-to-access-the-storage-space) | -                                         |
-| dirName   | string   | 存储文件时使用的文件夹前缀，不包括末尾的                                                                    | `my-qiniu`                                |
+| dirName   | string   | 存储文件时使用的文件夹前缀                                                                                  | `my-qiniu`                                |
 | limit     | number   | 超过 limit 字节的文件才上传                                                                                 | `100`                                     |
 | mimeType  | [string] | 需要上传的文件后缀                                                                                          | [".jpg", ".png", ".gif", ".svg", ".webp"] | `false` |
-| excludes  | string   | 选择哪些文件不需要上传，当值为函数是接收文件路径作为参数，返回`true`表示排除该文件                          | -                                         |
+| excludes  | string   | 选择哪些文件不需要上传                                                                                      | -                                         |
 | includes  | string   | 筛选包含的路径                                                                                              | `/`                                       |
 | maxFile   | number   | 单次最大上传数量                                                                                            | `100`                                     |
 | increment | boolean  | 是否增量上传，开启后会删除云端无用旧文件                                                                    | `true`                                    |
