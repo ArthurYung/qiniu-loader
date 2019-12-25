@@ -4,11 +4,11 @@ const loaderPath = path.resolve(__dirname, "loader.js");
 
 // 默认配置
 const defaultOptions = {
-  host: "http://cdn.toofook.com", // cdn域名
-  dirname: "my-test", // 项目前缀
-  bk: "brucecdn", // 七牛云bucket
-  ak: "imM5KIryDmH88QQ0ePHd5OQNX8aSqlUBKHDXRlvL", // 七牛云登陆 ak
-  sk: "NF-wmljgIP8dlgNOaWJ3x1Tg40uNev6IDeVLhR8p", // 七牛云登陆 sk
+  host: "", // cdn域名
+  dirname: "", // 项目前缀
+  bk: "", // 七牛云bucket
+  ak: "", // 七牛云登陆 ak
+  sk: "", // 七牛云登陆 sk
   limit: 100, // 超过100字节的文件才上传
   mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 上传的文件后缀
   zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
