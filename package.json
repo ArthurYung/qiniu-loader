@@ -1,6 +1,6 @@
 {
   "name": "qiniu-upload-webpack-plugin",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "webpack 七牛云上传插件",
   "main": "./bin/index.js",
   "scripts": {
@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/ArthurYung/qiniu-loader#readme",
   "dependencies": {
+    "chalk": "^3.0.0",
     "loader-utils": "^1.2.3",
-    "qiniu": "^7.2.2",
-    "webpack": "^4.41.0"
+    "qiniu": "^7.2.2"
   },
   "devDependencies": {}
 }
