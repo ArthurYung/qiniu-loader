@@ -10,7 +10,8 @@ const defaultOptions = {
   ak: "", // 七牛云登陆 ak
   sk: "", // 七牛云登陆 sk
   limit: 100, // 超过100字节的文件才上传
-  mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 上传的文件后缀
+  mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 上传的文件后缀（public模式无效）
+  excludeType: [".html", ".json", ".map"], // 不上传的文件后缀
   zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
   includes: "/", // 包含的文件目录
   maxFile: 100, // 单次最大上传数量
@@ -68,9 +69,10 @@ class QiNiuAutoUploadPlugin {
     }
   }
   setUploadFilterOption(context) {
-    const { includes, excludes, mimeType } = this.uploadOption;
+    const { includes, excludes, mimeType, excludeType } = this.uploadOption;
     this.uploadOption.mimeTypeReg = new RegExp(`(${mimeType.join("|")})$`);
     this.uploadOption.includesPath = path.resolve(context, includes);
+    this.uploadOption.excludeTypeReg = new RegExp(`(${excludeType.join('|')})$`)
     if (excludes) {
       this.uploadOption.excludesPath = path.resolve(context, excludes);
     }
@@ -108,7 +110,7 @@ class QiNiuAutoUploadPlugin {
     const dirname = this.uploadOption.dirname;
     const outputPath = compilation.compilation.outputOptions.path;
     Object.keys(compilation.compilation.assets).forEach(fileName => {
-      if (/\.(html|json)$/.test(fileName)) return;
+      if (this.uploadOption.excludeType.test(fileName)) return;
       const outputFile = path.resolve(outputPath, fileName);
       Qiniu.setLocalAsset(fileName, {
         outputFile,

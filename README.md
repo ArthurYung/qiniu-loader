@@ -32,7 +32,8 @@ module.exports = {
             ak: '', // 七牛云登陆 ak 必填
             sk: '', // 七牛云登陆 sk 必填
             limit: 100, // 超过100字节的文件才上传 默认100
-            mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 需要上传的文件后缀
+            mimeType: [".jpg", ".png", ".gif", ".svg", ".webp"], // 上传的文件后缀（public模式无效）
+            excludeType: [".html", ".json", ".map"], // 不上传的文件后缀
             zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
             includes: "/", // 筛选包含的路径
             maxFile: 100, // 单次最大上传数量
@@ -55,8 +56,11 @@ module.exports = {
 | **host**  | string   | 用于访问 DNS 资源的[域名](https://developer.qiniu.com/kodo/kb/5859/domain-name-to-access-the-storage-space) | -                                         |
 | dirname   | string   | 存储文件时使用的文件夹前缀                                                                                  | `my-qiniu`                                |
 | limit     | number   | 超过 limit 字节的文件才上传                                                                                 | `100`                                     |
-| mimeType  | [string] | 需要上传的文件后缀                                                                                          | [".jpg", ".png", ".gif", ".svg", ".webp"] | `false` |
-| excludes  | string   | 选择哪些文件不需要上传                                                                                      | -                                         |
+| mimeType  | [string] | 需要上传的文件后缀 （public模式无效）
+| [".jpg", ".png", ".gif", ".svg", ".webp"] | `false` |
+| excludeType  | [string] | 需要排除的文件后缀 （public有效）
+| [".html", ".json", ".map"] | `false` |
+| excludes  | string   | 选择哪些路径不需要上传                                                                                      | -                                         |
 | includes  | string   | 筛选包含的路径                                                                                              | `/`                                       |
 | maxFile   | number   | 单次最大上传数量                                                                                            | `100`                                     |
 | increment | boolean  | 是否增量上传，开启后会删除云端无用旧文件                                                                    | `true`                                    |
