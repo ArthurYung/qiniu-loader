@@ -110,7 +110,7 @@ class QiNiuAutoUploadPlugin {
     const dirname = this.uploadOption.dirname;
     const outputPath = compilation.compilation.outputOptions.path;
     Object.keys(compilation.compilation.assets).forEach(fileName => {
-      if (this.uploadOption.excludeType.test(fileName)) return;
+      if (this.uploadOption.excludeTypeReg.test(fileName)) return;
       const outputFile = path.resolve(outputPath, fileName);
       Qiniu.setLocalAsset(fileName, {
         outputFile,

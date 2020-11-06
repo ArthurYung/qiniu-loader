@@ -1,6 +1,6 @@
 const myPlugin = require("./bin");
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+// const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
   entry: "./index.js",
   mode: "production",
@@ -43,10 +43,10 @@ module.exports = {
     ]
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: "./index.html",
-      fileName: "index.html"
-    }),
+    // new HtmlWebpackPlugin({
+    //   template: "./index.html",
+    //   fileName: "index.html"
+    // }),
     new myPlugin({
       mode: "public"
       // increment: false
