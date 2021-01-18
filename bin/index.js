@@ -36,7 +36,7 @@ class QiNiuAutoUploadPlugin {
     this.getModulesOutputPath = this.getModulesOutputPath.bind(this);
     this.startUploadAssets = this.startUploadAssets.bind(this);
     this.setUploadFilterOption = this.setUploadFilterOption.bind(this);
-    this.checkExcludesPath = this.setUploadFilterOption.bind(this);
+    this.checkExcludesPath = this.checkExcludesPath.bind(this);
     this.startUploadByPublic = this.startUploadByPublic.bind(this);
 
     this.qiniu = new Qiniu.createQiNiu(this.uploadOption);
