@@ -36,6 +36,7 @@ module.exports = {
             excludeType: [".html", ".json", ".map"], // 不上传的文件后缀
             zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
             includes: "/", // 筛选包含的路径
+            excludes: [], // 排除的路径
             maxFile: 100, // 单次最大上传数量
             increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirname下旧的无用文件
             execution: null, // 是否开启插件，默认情况下只有production环境执行插件上传任务
@@ -56,11 +57,11 @@ module.exports = {
 | **host**  | string   | 用于访问 DNS 资源的[域名](https://developer.qiniu.com/kodo/kb/5859/domain-name-to-access-the-storage-space) | -                                         |
 | dirname   | string   | 存储文件时使用的文件夹前缀                                                                                  | `my-qiniu`                                |
 | limit     | number   | 超过 limit 字节的文件才上传                                                                                 | `100`                                     |
-| mimeType  | [string] | 需要上传的文件后缀 （public模式无效）
+| mimeType  | string[]] | 需要上传的文件后缀 （public模式无效）
 | [".jpg", ".png", ".gif", ".svg", ".webp"] | `false` |
-| excludeType  | [string] | 需要排除的文件后缀 （public有效）
+| excludeType  | string[]] | 需要排除的文件后缀 （public有效）
 | [".html", ".json", ".map"] | `false` |
-| excludes  | string   | 选择哪些路径不需要上传                                                                                      | -                                         |
+| excludes  | string[]   | 选择哪些路径不需要上传                                                                                      | -                                         |
 | includes  | string   | 筛选包含的路径                                                                                              | `/`                                       |
 | maxFile   | number   | 单次最大上传数量                                                                                            | `100`                                     |
 | increment | boolean  | 是否增量上传，开启后会删除云端无用旧文件                                                                    | `true`                                    |

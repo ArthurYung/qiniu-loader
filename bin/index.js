@@ -14,10 +14,11 @@ const defaultOptions = {
   excludeType: [".html", ".json", ".map"], // 不上传的文件后缀
   zone: null, // 储存机房 Zone_z0华东 Zone_z1华北 Zone_z2华南 Zone_na0北美
   includes: "/", // 包含的文件目录
+  excludes: [], // 排除的文件目录
   maxFile: 100, // 单次最大上传数量
   increment: true, // 是否是增量上传，默认为true，非增量上传时会删除云端dirname下旧的无用文件
   execution: null, // 是否开启插件，默认情况下只有production环境执行插件上传任务
-  mode: "pic" // 模式 public为上传全部资源，会替换掉项目的publicPath
+  mode: "pic", // 模式 public为上传全部资源，会替换掉项目的publicPath
 };
 
 const unshiftLoader = (moduleContext, options = {}) => {
@@ -35,6 +36,7 @@ class QiNiuAutoUploadPlugin {
     this.getModulesOutputPath = this.getModulesOutputPath.bind(this);
     this.startUploadAssets = this.startUploadAssets.bind(this);
     this.setUploadFilterOption = this.setUploadFilterOption.bind(this);
+    this.checkExcludesPath = this.setUploadFilterOption.bind(this);
     this.startUploadByPublic = this.startUploadByPublic.bind(this);
 
     this.qiniu = new Qiniu.createQiNiu(this.uploadOption);
@@ -52,7 +54,7 @@ class QiNiuAutoUploadPlugin {
     if (mode && mode === "development" && !execution) return;
 
     if (this.uploadOption.mode === "public") {
-      compiler.hooks.compilation.tap("QiniuAutoPlugin", compilation => {
+      compiler.hooks.compilation.tap("QiniuAutoPlugin", (compilation) => {
         compilation.outputOptions.publicPath =
           this.uploadOption.host + "/" + this.uploadOption.dirname + "/";
         this.outputPath = compilation.outputOptions.path;
@@ -69,14 +71,29 @@ class QiNiuAutoUploadPlugin {
     }
   }
   setUploadFilterOption(context) {
-    const { includes, excludes, mimeType, excludeType } = this.uploadOption;
+    const { includes, excludes, mimeType, excludeType, mode } = this.uploadOption;
     this.uploadOption.mimeTypeReg = new RegExp(`(${mimeType.join("|")})$`);
     this.uploadOption.includesPath = path.resolve(context, includes);
-    this.uploadOption.excludeTypeReg = new RegExp(`(${excludeType.join('|')})$`)
-    if (excludes) {
-      this.uploadOption.excludesPath = path.resolve(context, excludes);
+    this.uploadOption.excludeTypeReg = new RegExp(
+      `(${excludeType.join("|")})$`
+    );
+
+    if (Array.isArray(excludes)) {
+      const prefix = mode == 'pic' ? path.resolve(context) + '/' : ''
+      this.uploadOption.excludePaths = excludes.map(
+        (exclude) => new RegExp(`^${prefix}${exclude}`)
+      );
     }
   }
+
+  checkExcludesPath(path) {
+    const { excludePaths = [] } = this.uploadOption
+    for (let i = 0; i < excludePaths.length; i++) {
+      if(excludePaths.test(path)) return true
+    }
+    return false
+  }
+
   applyCompilerCallback(compilation) {
     compilation.hooks.normalModuleLoader.tap(
       "QiniuAutoPlugin",
@@ -88,9 +105,9 @@ class QiNiuAutoUploadPlugin {
     );
   }
   comilationTapCallback(loaderContext, moduleContext) {
-    const { includesPath, excludesPath, mimeTypeReg } = this.uploadOption;
+    const { includesPath, mimeTypeReg } = this.uploadOption;
 
-    if (excludesPath && moduleContext.userRequest.indexOf(excludesPath) === 0) {
+    if (this.checkExcludesPath(moduleContext.userRequest)) {
       return;
     }
 
@@ -103,33 +120,34 @@ class QiNiuAutoUploadPlugin {
   }
   getModulesOutputPath(moduleContext, fileName) {
     Qiniu.setLocalAsset(moduleContext.userRequest, {
-      outputFile: fileName
+      outputFile: fileName,
     });
   }
   startUploadByPublic(compilation) {
     const dirname = this.uploadOption.dirname;
     const outputPath = compilation.compilation.outputOptions.path;
-    Object.keys(compilation.compilation.assets).forEach(fileName => {
+    Object.keys(compilation.compilation.assets).forEach((fileName) => {
       if (this.uploadOption.excludeTypeReg.test(fileName)) return;
+      if (this.checkExcludesPath(fileName)) return;
       const outputFile = path.resolve(outputPath, fileName);
       Qiniu.setLocalAsset(fileName, {
         outputFile,
         outputFiles: [outputFile],
         emit: true,
         request: outputFile,
-        uploadKey: dirname + "/" + fileName
+        uploadKey: dirname + "/" + fileName,
       });
     });
     this.startUploadAssets(compilation);
   }
   startUploadAssets(compilation) {
     const outputPath = compilation.compilation.outputOptions.path;
-    Qiniu.modifyEachAsset(asset => {
+    Qiniu.modifyEachAsset((asset) => {
       const outputFiles = asset.outputFiles || [];
       outputFiles.push(path.resolve(outputPath, asset.outputFile));
       return {
         ...asset,
-        outputFiles
+        outputFiles,
       };
     });
 
