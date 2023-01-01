@@ -23,9 +23,9 @@
   "homepage": "https://github.com/ArthurYung/qiniu-loader#readme",
   "dependencies": {
     "chalk": "^3.0.0",
-    "loader-utils": "^1.2.3",
+    "loader-utils": "^3.2.1",
     "qiniu": "^7.2.2",
-    "webpack": "^4.0.0"
+    "webpack": "^5.75.0"
   },
   "devDependencies": {}
 }
